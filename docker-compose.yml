@@ -1,0 +1,44 @@
+version: '3'
+services:
+  db_SCS390:
+    image: mariadb:10.5.8
+    environment:
+      MYSQL_ROOT_PASSWORD: example
+      MYSQL_DATABASE: test_db2
+    volumes:
+    - ./SERVER/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "3307:3306"
+    networks:
+      - app-network
+
+  backend:
+    build: ./SERVER
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db_SCS390
+    environment:
+      - DB_HOST=db_SCS390
+      - DB_PORT=3306
+    networks:
+      - app-network
+  
+  frontend:
+    build:
+      context: ./library-management 
+      dockerfile: Dockerfile  
+    command: npm run serve  
+    ports:
+      - "8080:8080"  
+    depends_on:
+      - backend
+    networks:
+      - app-network
+
+      
+volumes:
+  db_data:
+  
+networks:
+  app-network:
